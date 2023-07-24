@@ -49,19 +49,9 @@ json(USCountyData)
     const nation = topojson.feature(data,data.objects.nation).features;
     const states = topojson.feature(data,data.objects.states).features;
     const counties = topojson.feature(data,data.objects.counties).features;
-
-    // g.selectAll('path')
-    //  .data(states)
-    //  .enter().append('path')
-    //  .attr('d', path)
-
-    // g.selectAll('path')
-    //  .data(nation)
-    //  .enter().append('path')
-    //  .attr('d', path)
-
+    
     g.selectAll('path')
-     .data(states)
+     .data(counties)
      .enter().append('path')
      .attr('d', path)
 
