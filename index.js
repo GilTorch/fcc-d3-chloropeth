@@ -5,13 +5,12 @@ const {
     geoAlbersUsa,
     geoPath,
     geoGraticule,
-    easeLinear,
-    easePolyIn, 
-    easePolyOut,
-    quadIn, 
-    quadOut,
-    active
+    active,
+    scaleTreshold,
+    interpolateYlGn,
+    scaleSequential
 } = d3
+
 
 const width = 900;
 const height = 600;
@@ -58,32 +57,35 @@ Promise.all([json(USCountyData),json(USEducationData)])
         const nation = topojson.feature(us,us.objects.nation).features;
         const states = topojson.feature(us,us.objects.states).features;
         const counties = topojson.feature(us,us.objects.counties).features;
-        
-        const legendColors = [
-            '#67001f',
-            '#b2182b',
-            '#d6604d',
-            '#f4a582',
-            '#fddbc7',
-            '#f7f7f7',
-            '#d1e5f0',
-            '#92c5de',
-            '#4393c3',
-            '#2166ac',
-            '#053061'
-        ];
-    
+
+        console.log('counties', counties)
+        const fetchCountyBachelorInfo = (id) => {
+            const county = usEducation.find(el => el.fips === id);
+            console.log('County', county)
+            if(county){
+                return county.bachelorsOrHigher;
+            }
+            return null;
+        }
+
+        const colorScale = scaleSequential(interpolateYlGn)
+                                    .domain([0, 100]);
+
         const paths = g.selectAll('path');
     
-       const displayCounties = paths
+        paths
          .data(counties)
-         .enter().append('path')
+         .join('path')
          .attr('d', path)
-         .attr('fill','white')
-         .transition()
-         .ease(easePolyIn)
-         .delay((_,i) => i*2)
-         .attr('fill', legendColors[Math.floor(Math.random()*10)])
+         .attr('fill',d => colorScale(fetchCountyBachelorInfo(d.id)))
+
+        paths
+         .data(states)
+         .join('path')
+         .attr('d', path)
+         .attr('stroke','white')
+         .attr('stroke-width',1.5)
+         .attr('fill', 'transparent')
     
     })
 
