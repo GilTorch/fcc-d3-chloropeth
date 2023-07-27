@@ -4,7 +4,13 @@ const {
     geoMercator,
     geoAlbersUsa,
     geoPath,
-    geoGraticule
+    geoGraticule,
+    easeLinear,
+    easePolyIn, 
+    easePolyOut,
+    quadIn, 
+    quadOut,
+    active
 } = d3
 
 const width = 900;
@@ -40,19 +46,44 @@ const svg = select('body')
 
     const path = geoPath()
     // Load external data and boot
-
-const g = svg.append('g')
-json(USCountyData)
-    .then(data => {
-        console.log(data)
-    // Draw the map
-    const nation = topojson.feature(data,data.objects.nation).features;
-    const states = topojson.feature(data,data.objects.states).features;
-    const counties = topojson.feature(data,data.objects.counties).features;
+Promise.all([json(USCountyData),json(USEducationData)])
+  .then(([us, usEducation]) => {
     
-    g.selectAll('path')
-     .data(counties)
-     .enter().append('path')
-     .attr('d', path)
+    console.table(us)
+    console.table(usEducation)
 
-})
+    const g = svg.append('g')
+
+        // Draw the map
+        const nation = topojson.feature(us,us.objects.nation).features;
+        const states = topojson.feature(us,us.objects.states).features;
+        const counties = topojson.feature(us,us.objects.counties).features;
+        
+        const legendColors = [
+            '#67001f',
+            '#b2182b',
+            '#d6604d',
+            '#f4a582',
+            '#fddbc7',
+            '#f7f7f7',
+            '#d1e5f0',
+            '#92c5de',
+            '#4393c3',
+            '#2166ac',
+            '#053061'
+        ];
+    
+        const paths = g.selectAll('path');
+    
+       const displayCounties = paths
+         .data(counties)
+         .enter().append('path')
+         .attr('d', path)
+         .attr('fill','white')
+         .transition()
+         .ease(easePolyIn)
+         .delay((_,i) => i*2)
+         .attr('fill', legendColors[Math.floor(Math.random()*10)])
+    
+    })
+
