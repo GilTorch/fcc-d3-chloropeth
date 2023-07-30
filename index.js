@@ -14,7 +14,23 @@ const {
     axisBottom,
 } = d3
 
-console.log('Hello World')
+/** UTILS */
+
+const fetchCountyBachelorInfo = (data,id) => {
+    const county = data.find(el => el.fips === id);
+    if(county){
+        return county.bachelorsOrHigher;
+    }
+    return null;
+}
+
+const getCounty = (data,id) => {
+    const county = data.find(el => el.fips === id);
+    if(county) return county; 
+    if(!county) return null
+}
+
+/**  */
 
 const width = window.innerWidth*0.6;
 const height = window.innerHeight*0.6;
@@ -69,13 +85,7 @@ Promise.all([json(usCountyData),json(usEducationData)])
     const states = topojson.feature(us,us.objects.states).features;
     const counties = topojson.feature(us,us.objects.counties).features;
     
-    const fetchCountyBachelorInfo = (id) => {
-        const county = usEducation.find(el => el.fips === id);
-        if(county){
-            return county.bachelorsOrHigher;
-        }
-        return null;
-    }
+
 
     const colorScale = scaleSequential()
                         .interpolator(d => {
@@ -95,8 +105,11 @@ Promise.all([json(usCountyData),json(usEducationData)])
     paths
         .data(counties)
         .join('path')
+        .attr('class', 'county')
+        .attr('data-fips', d => getCounty(usEducation,d.id).fips)
+        .attr('data-education', d => getCounty(usEducation,d.id).bachelorsOrHigher)
         .attr('d', path)
-        .attr('fill',d => colorScale(fetchCountyBachelorInfo(d.id)))
+        .attr('fill',d => colorScale(fetchCountyBachelorInfo(usEducation,d.id)))
 
     paths
         .data(states)
@@ -129,6 +142,7 @@ Promise.all([json(usCountyData),json(usEducationData)])
    const legend = svg
      .append('g')
      .attr('transform', `translate(${margin.left},${height+ 100})`)
+     .attr('id', 'legend')
      .call(legendAxis
             .tickValues(tickValues)
             .tickSizeOuter(0)
@@ -140,10 +154,10 @@ Promise.all([json(usCountyData),json(usEducationData)])
         .selectAll('.legends')
         .data(tresholdValues)
         .join('rect')
-        .attr('x', (d, i) => legendScale(tickValues[i]))
+        .attr('x', (_, i) => legendScale(tickValues[i]))
         .attr('y',-legendHeight)
         .attr('height', legendHeight)
-        .attr('width', (d,i) => legendScale(d[1]) - legendScale(d[0]))
+        .attr('width', (d) => legendScale(d[1]) - legendScale(d[0]))
         .attr('fill', d => colorScale(d[0]))
 })
 
