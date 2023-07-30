@@ -67,6 +67,9 @@ const svg = select('#svg-container')
     .attr('height', height + 200)
 
 const path = geoPath()
+
+
+
     // Load external data and boot
 Promise.all([json(usCountyData),json(usEducationData)])
   .then(([us, usEducation]) => {
@@ -94,6 +97,8 @@ Promise.all([json(usCountyData),json(usEducationData)])
         .attr('stroke','black')
         .attr('stroke-width', 5)
 
+    let currentRectId = 0;
+
     paths
         .data(counties)
         .join('path')
@@ -101,40 +106,50 @@ Promise.all([json(usCountyData),json(usEducationData)])
             .attr('data-fips', d => getCounty(usEducation,d.id).fips)
             .attr('data-education', d => getCounty(usEducation,d.id).bachelorsOrHigher)
             .attr('d', path)
+            .attr('id', d => `path-${d.id}`)
             .attr('fill',d => colorScale(fetchCountyBachelorInfo(usEducation,d.id)))
-                .on('mouseover', (e,d) => {
-                    console.log(`Current Data`,d)
-                    const { id } = d;
+            .on('mouseover', (e,d) => {
+                // window.alert('hello')
 
-                    const county = getCounty(id);
-            
-                    const text = `
-                        Hello World: ${county.id}
-                    `
-                    tooltip.style('left',globalMousePos.x+'px')
-                    tooltip.style('top', margin.top+50+'px')
-                    tooltip.style('opacity',1)
-                    tooltip.html(text)
-                    tooltip.attr('data-year', year)
-                    const currentRectId = e.target.getAttribute('id');
-            
-                    svg 
-                    .select(`#${currentRectId}`)
-                    .attr('stroke','black')
-                    .attr('stroke-width', 1)
-                    // const rectSelected = e.target.
-                })
-                .on('mouseout', () => {tooltip.style('opacity',0)})
+                const { id } = d;
+    
+                const { area_name, state, bachelorsOrHigher } = getCounty(usEducation, id);
+                
+                const text = `
+                    ${area_name}, ${state}: ${bachelorsOrHigher}%
+                `
+
+                tooltip.attr('data-education', bachelorsOrHigher);
+                tooltip.attr('data-')
+                tooltip.style('opacity',1);
+                tooltip.style('left',globalMousePos.x+'px');
+                tooltip.style('top', globalMousePos.y-50+'px');
+                tooltip.style('opacity',1);
+                tooltip.html(text);
+                 currentRectId = e.target.getAttribute('id');
+        
+                svg 
+                .select(`#${currentRectId}`)
+                .attr('stroke','black')
+                .attr('stroke-width', 2)     
+            })
+            .on('mouseout', () => {
+                tooltip.style('opacity',0);
+                svg 
+                .select(`#${currentRectId}`)
+                .attr('stroke','black')
+                .attr('stroke-width', 0)
+            })
         
 
-    paths
-        .data(states)
-        .join('path')
-        .attr('d', path)
-        .attr('stroke','#fff')
-        .attr('stroke-width',1.5)
-        .attr('fill', 'transparent')
 
+        paths
+            .data(states)
+            .join('path')
+            .attr('d', path)
+            .attr('stroke','#fff')
+            .attr('stroke-width',1.5)
+            .attr('fill', 'none')
 
     // Legend section
     const tresholdValues = [[3,12],[12,21],[21,30],[30,39],[39,48],[48,57],[57,66]];
