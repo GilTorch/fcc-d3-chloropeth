@@ -45,7 +45,7 @@ const usCountyData = [
     "counties.json"
 ].join('')
 
-const svg = select('body')
+const svg = select('#svg-container')
     .append('svg')
     .attr('width', width)
     .attr('height', height + 200)
